@@ -1,0 +1,8 @@
+My repository fork:
+    https://github.com/vassilisw/ffmpeg-static
+
+Check these for adding/removing configuration switches/options:
+    https://stackoverflow.com/questions/27832052/how-do-i-modify-this-ffmpeg-build-script-for-minimal-binary-size-output
+    https://github.com/bbcallen/ijkplayer/blob/master/config/module-lite.sh
+    https://stackoverflow.com/questions/48973461/best-config-for-ffmpeg-to-convert-mp3-file-only
+

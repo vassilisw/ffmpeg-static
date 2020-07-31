@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for f in test*; do
+    RR=$(./ffmpeg -hide_banner -t 60 -i "$f" -f wav -ar 44100 -ac 2 -sample_fmt s16 - 2>/dev/null > /dev/null)
+    echo "$f = $?"
+done
+
