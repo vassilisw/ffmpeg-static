@@ -3,15 +3,19 @@
 set -e
 set -u
 
+BUILD_ALL=1
 jflag=
 jval=2
 rebuild=0
 download_only=0
 uname -mpi | grep -qE 'x86|i386|i686' && is_x86=1 || is_x86=0
 
-while getopts 'j:Bd' OPTION
+while getopts 'Vj:Bd' OPTION
 do
   case $OPTION in
+  V)
+      BUILD_ALL=0
+      ;;
   j)
       jflag=1
       jval="$OPTARG"
@@ -23,7 +27,7 @@ do
       download_only=1
       ;;
   ?)
-      printf "Usage: %s: [-j concurrency_level] (hint: your cores + 20%%) [-B] [-d]\n" $(basename $0) >&2
+      printf "Usage: %s: [-j concurrency_level] (hint: your cores + 20%%) [-V] [-B] [-d]\n" $(basename $0) >&2
       exit 2
       ;;
   esac
@@ -221,6 +225,11 @@ download \
 
 TARGET_DIR_SED=$(echo $TARGET_DIR | awk '{gsub(/\//, "\\/"); print}')
 
+
+# --------------------------------------------------------------------------
+if [ $BUILD_ALL -eq 1 ]; then # BUILD_ALL
+
+
 if [ $is_x86 -eq 1 ]; then
     echo "*** Building yasm ***"
     cd $BUILD_DIR/yasm*
@@ -411,6 +420,11 @@ cd $BUILD_DIR/speex*
 make -j $jval
 make install
 
+
+fi # BUILD_ALL
+# --------------------------------------------------------------------------
+
+
 # FFMpeg
 echo "*** Building FFmpeg ***"
 cd $BUILD_DIR/FFmpeg*
@@ -426,36 +440,29 @@ if [ "$platform" = "linux" ]; then
     --extra-libs="-lpthread -lm -lz" \
     --extra-ldexeflags="-static" \
     --bindir="$BIN_DIR" \
-    --enable-pic \
-    --enable-ffplay \
-    --enable-fontconfig \
-    --enable-frei0r \
+    --disable-everything \
+    --enable-decoder=opus,aac,h264,mjpeg,mpeg2video,mpeg4,wav,flac,ogg,aiff,mp3*,pcm* \
+    --enable-encoder=aac,mpeg4,libx264,wav,flac,pcm*,libmp3lame \
+    --enable-protocol=concat,file,pipe \
+    --enable-demuxer=opus,aac,avi,h264,image2,matroska,pcm_s16le,mov,m4v,rawvideo,wav,flac,ogg,mp3 \
+    --enable-muxer=h264,ipod,mov,mp4,wav,flac,ogg,opus,aiff,mp3 \
+    --enable-parser=aac,h264,mjpeg,mpeg4video,mpegaudio,mpegvideo,png \
+    --enable-bsf=aac_adtstoasc \
+    --enable-filter=transpose,aresample \
     --enable-gpl \
-    --enable-version3 \
-    --enable-libass \
-    --enable-libfribidi \
-    --enable-libfdk-aac \
-    --enable-libfreetype \
-    --enable-libmp3lame \
-    --enable-libopencore-amrnb \
-    --enable-libopencore-amrwb \
-    --enable-libopenjpeg \
-    --enable-libopus \
-    --enable-librtmp \
-    --enable-libsoxr \
-    --enable-libspeex \
-    --enable-libtheora \
-    --enable-libvidstab \
-    --enable-libvo-amrwbenc \
-    --enable-libvorbis \
-    --enable-libvpx \
-    --enable-libwebp \
     --enable-libx264 \
     --enable-libx265 \
-    --enable-libxvid \
-    --enable-libzimg \
-    --enable-nonfree \
-    --enable-openssl
+    --disable-network \
+    --enable-pthreads \
+    --enable-avcodec \
+    --enable-avformat \
+    --enable-swresample \
+    --enable-avfilter \
+    --enable-libmp3lame \
+    --enable-libvorbis \
+    --enable-ffmpeg
+
+
 elif [ "$platform" = "darwin" ]; then
   [ ! -f config.status ] && PATH="$BIN_DIR:$PATH" \
   PKG_CONFIG_PATH="${TARGET_DIR}/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/local/Cellar/openssl/1.0.2o_1/lib/pkgconfig" ./configure \
